@@ -796,6 +796,9 @@ bool PetBattle::Cast(BattlePet* caster, uint32 abilityId, uint8 turn, int8 procT
         if (abilityTurnEntry->AbilityId != abilityId)
             continue;
 
+        PetBattleAbilityTurn l_AbilityTurn;
+        memset(&l_AbilityTurn, 0, sizeof(l_AbilityTurn));
+
         // make sure multiple turn ability has done it's full duration
         if (abilityTurnEntry->Duration > 1 && abilityTurnEntry->Duration != turn)
             continue;
@@ -816,10 +819,19 @@ bool PetBattle::Cast(BattlePet* caster, uint32 abilityId, uint8 turn, int8 procT
             BattlePetAbilityEffect abilityEffect;
             abilityEffect.SetAbilityInfo(abilityId, abilityEffectEntry, abilityEntry->FamilyId);
             abilityEffect.SetCaster(caster);
+            abilityEffect.StopChain = false;
             abilityEffect.SetParentBattle(this);
 
             abilityEffect.AddTargets();
             abilityEffect.Execute();
+
+            if (!abilityEffect.Execute())
+            {
+                l_AbilityTurn.ChainFailure |= 1 << abilityEffectEntry->EffectIndex - 1;
+            }
+
+            if (abilityEffect.StopChain)
+                break;
         }
     }
 

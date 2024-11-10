@@ -59,7 +59,7 @@ struct BattlePetAbilityEffectEntry
     uint32 VisualId;                                        // 2 - visual id (BattlePetVisual.db2)
     uint32 TriggerAbility;                                  // 3 - parent ability
     uint32 EffectProperty;                                  // 4 - effect property id (BattlePetEffectProperties.db2)
-    //uint32 Unk1;                                          // 5 - effect property offset?
+    uint32 EffectIndex;                                          // 5 - effect property offset?
     int32  Properties[MAX_BATTLE_PET_PROPERTIES];           // 6 - values for effect property
 };
 

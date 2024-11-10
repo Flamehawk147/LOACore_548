@@ -66,6 +66,9 @@ void BattlePetAura::Process()
     // handle aura effects
     if (auto abilityEntry = sBattlePetAbilityStore.LookupEntry(m_ability))
     {
+        PetBattleAbilityTurn l_AbilityTurn;
+        memset(&l_AbilityTurn, 0, sizeof(l_AbilityTurn));
+
         uint32 turnCount = 0;
         uint32 topMaxTurnId = 0;
 
@@ -100,11 +103,20 @@ void BattlePetAura::Process()
                 // initialise ability effect
                 BattlePetAbilityEffect abilityEffect;
                 abilityEffect.SetAbilityInfo(m_ability, abilityEffectEntry, abilityEntry->FamilyId);
+                abilityEffect.StopChain = false;
                 abilityEffect.SetCaster(m_caster);
                 abilityEffect.AddTarget(m_target);
                 abilityEffect.SetParentBattle(m_petBattle);
 
                 abilityEffect.Execute();
+
+                if (!abilityEffect.Execute())
+                {
+                    l_AbilityTurn.ChainFailure |= 1 << abilityEffectEntry->EffectIndex - 1;
+                }
+
+                if (abilityEffect.StopChain)
+                    break;
             }
         }
     }

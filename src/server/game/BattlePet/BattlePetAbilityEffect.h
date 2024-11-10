@@ -47,6 +47,11 @@ enum PetBattleEffectFlags : uint32;
 
 typedef std::vector<BattlePet*> TargetStore;
 
+struct PetBattleAbilityTurn
+{
+    uint32 ChainFailure;
+};
+
 class BattlePetAbilityEffect
 {
 public:
@@ -56,6 +61,7 @@ public:
     void SetCaster(BattlePet* caster) { m_caster = caster; }
     void SetParentBattle(PetBattle* petBattle) { m_petBattle = petBattle; }
 
+    PetBattleAbilityTurn* AbilityTurn;
     BattlePet* GetActiveOpponent();
     void AddTargets();
     void AddTarget(BattlePet* target);
@@ -64,6 +70,8 @@ public:
     uint32 CalculateDamage(uint32 damage);
     uint32 CalculateHeal(uint32 heal);
     void CalculateHit(int32 accuracy);
+
+    bool StopChain;
 
     void Damage(BattlePet* target, uint32 damage);
     void Heal(BattlePet* target, uint32 heal);
@@ -119,6 +127,8 @@ public:
     void HandleHealStateToggleAura();
     void HandleModState();
     void HandleDamageAuraToggleAura();
+    void HandleCheckState();
+    void HandleCheckFailure();
 
 private:
     uint32 m_abilityId = 0;

@@ -185,7 +185,7 @@ static BattlePetAbilityEffectHandler Handlers[PET_BATTLE_TOTAL_ABILITY_EFFECTS] 
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
-    /* Effect 156 */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
+    /* Effect 156 */ { &BattlePetAbilityEffect::HandleCheckState,               PET_BATTLE_ABILITY_TARGET_TARGET   },
     /* Effect 157 */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
     /* Effect 158 */ { &BattlePetAbilityEffect::HandleStopChainFailure,         PET_BATTLE_ABILITY_TARGET_CASTER },
     /* Effect 159 */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
@@ -223,7 +223,7 @@ static BattlePetAbilityEffectHandler Handlers[PET_BATTLE_TOTAL_ABILITY_EFFECTS] 
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
-    /* Effect 194 */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
+    /* Effect 194 */ { &BattlePetAbilityEffect::HandleCheckFailure,             PET_BATTLE_ABILITY_TARGET_CASTER   },
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
     /*   UNUSED   */ { &BattlePetAbilityEffect::HandleNull,                     PET_BATTLE_ABILITY_TARGET_NONE   },
     /* Effect 197 */ { &BattlePetAbilityEffect::HandleDamagePercentTaken,       PET_BATTLE_ABILITY_TARGET_TARGET }
@@ -258,6 +258,8 @@ bool BattlePetAbilityEffect::Execute()
 
         return false;
     }
+
+    StopChain = false;
 
     // execute handler on targets
     for (auto&& target : m_targets)
@@ -499,8 +501,8 @@ void BattlePetAbilityEffect::Damage(BattlePet* target, uint32 damage)
 
 void BattlePetAbilityEffect::HandleStopChainFailure()
 {
-    if (m_chainFailure == true)
-        m_chainFailure = false;
+    if (AbilityTurn->ChainFailure)
+        StopChain = true;
 }
 
 void BattlePetAbilityEffect::Heal(BattlePet* target, uint32 heal)
@@ -561,6 +563,7 @@ void BattlePetAbilityEffect::SetHealth(BattlePet* target, uint32 value)
         {
             m_flags |= PET_BATTLE_EFFECT_FLAG_HIT;
             m_petBattle->Kill(m_caster, target, m_effectEntry->Id, m_flags);
+            StopChain = true;
         }
     }
 
@@ -583,10 +586,16 @@ void BattlePetAbilityEffect::HandleKill()
     int32 l_ImmuneStateCondition = m_effectEntry->Properties[2];
 
     if (!l_ImmuneStateCondition || !GetActiveOpponent()->States[l_ImmuneStateCondition])
+    {
         m_petBattle->Kill(m_caster, GetActiveOpponent(), m_effectEntry->Id, m_flags);
+        StopChain = true;
+    }
 
     if (!l_ImmuneStateCondition || !m_caster->States[l_ImmuneStateCondition])
+    {
         m_petBattle->Kill(m_caster, m_caster, m_effectEntry->Id, m_flags);
+        StopChain = true;
+    }
 }
 
 //Effect 78
@@ -807,6 +816,12 @@ void BattlePetAbilityEffect::HandleStateDamage()
     Damage(m_target, l_Damage);
 }
 
+void BattlePetAbilityEffect::HandleCheckState()
+{
+    if (m_target->States[m_effectEntry->Properties[0]] != m_effectEntry->Properties[1])
+        StopChain = true;
+}
+
 //Effect 28
 void BattlePetAbilityEffect::HandleCancellableAura()
 {
@@ -905,6 +920,12 @@ void BattlePetAbilityEffect::HandleRampingDamage()
     Damage(m_target, damage);
 }
 
+void BattlePetAbilityEffect::HandleCheckFailure()
+{
+    if (!AbilityTurn->ChainFailure)
+        StopChain = true;
+}
+
 void BattlePetAbilityEffect::HandleSetState()
 {
     m_petBattle->UpdatePetState(m_caster, m_target, m_effectEntry->Id, m_effectEntry->Properties[0], m_effectEntry->Properties[1]);
@@ -912,7 +933,7 @@ void BattlePetAbilityEffect::HandleSetState()
 
 void BattlePetAbilityEffect::HandleHealPctDealt()
 {
-    if (m_effectEntry->Properties[2] && m_chainFailure)
+    if (m_effectEntry->Properties[2] && AbilityTurn->ChainFailure)
         return;
 
     CalculateHit(m_effectEntry->Properties[1]);
@@ -923,7 +944,7 @@ void BattlePetAbilityEffect::HandleHealPctDealt()
 void BattlePetAbilityEffect::HandleControlAura()
 {
     // Chain Failure
-    if (m_effectEntry->Properties[0] && m_chainFailure)
+    if (m_effectEntry->Properties[0] && AbilityTurn->ChainFailure)
         return;
 
     CalculateHit(m_effectEntry->Properties[1]);
@@ -961,7 +982,7 @@ void BattlePetAbilityEffect::HandleHealCasterPercentNotState()
 void BattlePetAbilityEffect::HandleAuraCondAccuracyState()
 {
     // Chain Failure
-    if (m_effectEntry->Properties[4] && m_chainFailure)
+    if (m_effectEntry->Properties[4] && AbilityTurn->ChainFailure)
         return;
 
     // Accuracy
@@ -1016,7 +1037,7 @@ void BattlePetAbilityEffect::HandleHealLastHitTaken()
 void BattlePetAbilityEffect::HandleWeatherAura()
 {
     // Chain Failure
-    if (m_effectEntry->Properties[3] && m_chainFailure)
+    if (m_effectEntry->Properties[3] && AbilityTurn->ChainFailure)
         return;
 
     CalculateHit(m_effectEntry->Properties[1]);
@@ -1081,8 +1102,8 @@ void BattlePetAbilityEffect::HandleDamagePercent()
 // Effect 50: ChainFailure, Accuracy, Duration, MaxAllowed, CasterState, TargetState
 void BattlePetAbilityEffect::HandleNegativeAura()
 {
-    if (m_effectEntry->Properties[0] && m_chainFailure)
-        return;
+   if (m_effectEntry->Properties[0] && AbilityTurn->ChainFailure)
+       return;
 
     CalculateHit(m_effectEntry->Properties[1]);
     m_petBattle->AddAura(m_caster, m_target, m_effectEntry->TriggerAbility, m_effectEntry->Id, m_effectEntry->Properties[2], m_flags, m_effectEntry->Properties[3]);
@@ -1109,7 +1130,7 @@ void BattlePetAbilityEffect::HandleResurect()
 // Effect 54: ChainFailure, Accuracy, Duration, MaxAllowed
 void BattlePetAbilityEffect::HandlePeriodicTrigger()
 {
-    if (m_effectEntry->Properties[0] && m_chainFailure)
+    if (m_effectEntry->Properties[0] && AbilityTurn->ChainFailure)
         return;
 
     CalculateHit(m_effectEntry->Properties[1]);

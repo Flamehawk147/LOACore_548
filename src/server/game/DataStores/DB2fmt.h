@@ -20,7 +20,7 @@
 
 char const BattlePetAbilityfmt[] = "nixiiiss";
 char const BattlePetAbilityStatefmt[] = "niii";
-const char BattlePetAbilityEffectfmt[] = "niiiixiiiiii";
+const char BattlePetAbilityEffectfmt[] = "niiiiiiiiiii"; // OLD: niiiixiiiiii
 const char BattlePetAbilityTurnfmt[] = "niiiii";
 const char BattlePetBreedQualityfmt[] = "nif";
 char const BattlePetBreedStatefmt[] = "niii";
