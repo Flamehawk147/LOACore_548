@@ -22,30 +22,20 @@
 
 class PetBattle;
 class BattlePet;
-class BattlePetAura;
-
-enum BattlePetAbilityFlags
-{
-    BATTLEPET_ABILITY_FLAG_TRIGGER          = 1 << 0,
-    BATTLEPET_ABILITY_FLAG_BUFF             = 1 << 1,
-    BATTLEPET_ABILITY_TYPE_PASSIF           = 1 << 2,
-    BATTLEPET_ABILITY_TYPE_SPECIAL_PASSIF   = 1 << 3,
-    BATTLEPET_ABILITY_TYPE_DISPEL           = 1 << 4
-};
 
 enum PetBattleAbilityTarget
 {
     PET_BATTLE_ABILITY_TARGET_NONE                      = 0,
     PET_BATTLE_ABILITY_TARGET_CASTER                    = 1,
     PET_BATTLE_ABILITY_TARGET_TARGET                    = 2,
-    PET_BATTLE_ABILITY_TARGET_CASTER_TEAM               = 3,
-    PET_BATTLE_ABILITY_TARGET_CASTER_TEAM_0             = 4,
-    PET_BATTLE_ABILITY_TARGET_CASTER_TEAM_1             = 5,
-    PET_BATTLE_ABILITY_TARGET_CASTER_TEAM_2             = 6,
+    //PET_BATTLE_ABILITY_TARGET_CASTER_TEAM               = 3,
+    // PET_BATTLE_ABILITY_TARGET_CASTER_TEAM_0             = 4,
+    // PET_BATTLE_ABILITY_TARGET_CASTER_TEAM_1             = 5,
+    // PET_BATTLE_ABILITY_TARGET_CASTER_TEAM_2             = 6,
     PET_BATTLE_ABILITY_TARGET_TARGET_TEAM               = 7,
-    PET_BATTLE_ABILITY_TARGET_TARGET_TEAM_0             = 8,
-    PET_BATTLE_ABILITY_TARGET_TARGET_TEAM_1             = 9,
-    PET_BATTLE_ABILITY_TARGET_TARGET_TEAM_2             = 10,
+    // PET_BATTLE_ABILITY_TARGET_TARGET_TEAM_0             = 8,
+    // PET_BATTLE_ABILITY_TARGET_TARGET_TEAM_1             = 9,
+    // PET_BATTLE_ABILITY_TARGET_TARGET_TEAM_2             = 10,
     PET_BATTLE_ABILITY_TARGET_ALL                       = 11,
     PET_BATTLE_ABILITY_TARGET_CASTER_TEAM_UNCONDITIONAL = 12, 
     PET_BATTLE_ABILITY_TARGET_HEAD                      = 13
@@ -75,17 +65,10 @@ public:
     uint32 CalculateHeal(uint32 heal);
     void CalculateHit(int32 accuracy);
 
-    void Damage(BattlePet* target, uint32 damage, bool cantBeAvoidBlockedDodged = false);
+    void Damage(BattlePet* target, uint32 damage);
     void Heal(BattlePet* target, uint32 heal);
 
     void SetHealth(BattlePet* target, uint32 value);
-    void SetState(BattlePet* target, uint32 state, int32 value);
-    int32 GetState(BattlePet* target, uint32 state);
-    void ModState(BattlePet* target, uint32 stateId, int32 modValue, bool apply = true);
-    void AddAura(BattlePet* target, uint32 ability, int32 duration, int32 maxAllowed = 1);
-    BattlePetAura* GetAura(BattlePet* target, uint32 ability);
-    void Trigger(BattlePet* target, uint32 ability);
-    void Kill(BattlePet* target);
 
     bool Execute();
     void HandleNull() { }
@@ -122,7 +105,7 @@ public:
     void HandleControlAura();
     void HandleAuraCondAccuracyState();
     void HandleSplittedDamage();
-    void HandleResetAuraDuration();
+    void HandleResetAuraDuration(); // Not handled
     void HandleStopChainFailure();
     void HandleKill();
     void HandleCancellableAura();
@@ -139,25 +122,9 @@ public:
     void HandleDamageAuraToggleAura();
     void HandleHealthConsume();
     void HandleSetHealthPercent();
-    void HandleLockActiveAbility();
+    void HandleLockActiveAbility(); // NYI
     void HandleCleansing();
     void HandleAuraState();
-    void HandleSwap();
-    void HandleUpdatePriority();
-    void HandleAuraIfCasterFaster();
-    void HandleChangeCasterState();
-    void HandleSwapLow();
-    void HandleSwapHigh();
-    void HandleRedirectionAura();
-    void HandleCheckFailure();
-    void HandleTryRevive();
-    void HandleCheckState();
-    void HandleHealPetType();
-    void HandleExtraAttackIfMoreFaster();
-    void HandleExtraHealIfLastHitKill();
-    void HandleExtraAttackIfLessFaster();
-    void HandleDamageRange();
-    void HandleDamageWithBonus();
 
 private:
     uint32 m_abilityId = 0;
@@ -175,7 +142,6 @@ private:
     bool m_reportFailAsImmune = false;
     bool m_chainFailure = false;
     bool m_immortalOneRound = true;
-    bool m_stopChain = false;
 };
 
 #endif
