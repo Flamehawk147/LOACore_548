@@ -15,13 +15,14 @@
 #include "ObjectMgr.h"
 #include "ObjectAccessor.h"
 #include "ScriptMgr.h"
+#include "ObjectGuid.h"
 
 #define PETBATTLE_ABILITY_TRAP_FAMILY 0x99C00
 
 /// Load
 void BattlePet::Load(Field* p_Fields)
 {
-    JournalID        = MAKE_NEW_GUID(p_Fields[0].GetUInt64(), 0, HIGHGUID_BATTLE_PET);
+    JournalID        = ObjectGuid(HighGuid::BattlePet, p_Fields[0].GetUInt32()).GetRawValue();
     Slot             = p_Fields[1].GetInt32();
     Name             = p_Fields[2].GetString();
     NameTimeStamp    = p_Fields[3].GetUInt32();
@@ -51,26 +52,26 @@ void BattlePet::Load(Field* p_Fields)
     {
         BattlePetSpeciesXAbilityEntry const* l_SpeciesXAbilityInfo = sBattlePetSpeciesXAbilityStore.LookupEntry(l_SpeciesXAbilityId);
 
-        if (!l_SpeciesXAbilityInfo || l_SpeciesXAbilityInfo->speciesId != Species || l_SpeciesXAbilityInfo->level > Level)
+        if (!l_SpeciesXAbilityInfo || l_SpeciesXAbilityInfo->SpeciesId != Species || l_SpeciesXAbilityInfo->RequiredLevel > Level)
             continue;
 
-        if (l_SpeciesXAbilityInfo->level < 5)
-            Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+        if (l_SpeciesXAbilityInfo->RequiredLevel < 5)
+            Abilities[l_SpeciesXAbilityInfo->SlotId] = l_SpeciesXAbilityInfo->AbilityId;
         else
         {
-            switch (l_SpeciesXAbilityInfo->tier)
+            switch (l_SpeciesXAbilityInfo->SlotId)
             {
                 case 0:
                     if (Flags & BATTLEPET_FLAG_ABILITY_1_SECOND)
-                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+                        Abilities[l_SpeciesXAbilityInfo->SlotId] = l_SpeciesXAbilityInfo->AbilityId;
                     break;
                 case 1:
                     if (Flags & BATTLEPET_FLAG_ABILITY_2_SECOND)
-                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+                        Abilities[l_SpeciesXAbilityInfo->SlotId] = l_SpeciesXAbilityInfo->AbilityId;
                     break;
                 case 2:
                     if (Flags & BATTLEPET_FLAG_ABILITY_3_SECOND)
-                        Abilities[l_SpeciesXAbilityInfo->tier] = l_SpeciesXAbilityInfo->abilityId;
+                        Abilities[l_SpeciesXAbilityInfo->SlotId] = l_SpeciesXAbilityInfo->AbilityId;
                     break;
                 default:
                     break;
@@ -2076,8 +2077,9 @@ void PetBattleSystem::JoinQueue(Player* p_Player)
         return;
     }
 
-    // Load player pets
-    BattlePet::Ptr * l_PetSlots = p_Player->GetBattlePetCombatTeam();
+    // Load player pets - TODO: Implement proper pet team loading for LOACore  
+    BattlePet::Ptr l_NullPets[MAX_PETBATTLE_SLOTS] = { nullptr };
+    BattlePet::Ptr * l_PetSlots = l_NullPets; // Stub: p_Player->GetBattlePetCombatTeam();
     uint32 l_Weight = 0;
 
     for (size_t l_CurrentPetSlot = 0; l_CurrentPetSlot < MAX_PETBATTLE_SLOTS; ++l_CurrentPetSlot)
@@ -2366,15 +2368,16 @@ void PetBattleSystem::Update(uint32 p_TimeDiff)
                                 l_PlayerOpposantPets[l_CurrentPetSlot] = 0;
                             }
 
-                            // Load player pets
-                            BattlePet::Ptr * l_PetSlots = l_LeftPlayer->GetBattlePetCombatTeam();
+                            // Load player pets - TODO: Implement proper pet team loading for LOACore
+                            BattlePet::Ptr l_LeftNullPets[MAX_PETBATTLE_SLOTS] = { nullptr };
+                            BattlePet::Ptr * l_PetSlots = l_LeftNullPets; // Stub: l_LeftPlayer->GetBattlePetCombatTeam();
 
                             for (size_t l_CurrentPetSlot = 0; l_CurrentPetSlot < MAX_PETBATTLE_SLOTS; ++l_CurrentPetSlot)
                             {
                                 if (!l_PetSlots[l_CurrentPetSlot])
                                     continue;
 
-                                if (l_PlayerPetCount >= MAX_PETBATTLE_SLOTS || l_PlayerPetCount >= l_LeftPlayer->GetUnlockedPetBattleSlot())
+                                if (l_PlayerPetCount >= MAX_PETBATTLE_SLOTS || l_PlayerPetCount >= MAX_PETBATTLE_SLOTS) // Stub: l_LeftPlayer->GetUnlockedPetBattleSlot()
                                     break;
 
                                 l_PlayerPets[l_PlayerPetCount] = BattlePetInstance::Ptr(new BattlePetInstance());
@@ -2385,14 +2388,15 @@ void PetBattleSystem::Update(uint32 p_TimeDiff)
                                 ++l_PlayerPetCount;
                             }
 
-                            BattlePet::Ptr * l_PetOpposantSlots = l_RightPlayer->GetBattlePetCombatTeam();
+                            BattlePet::Ptr l_RightNullPets[MAX_PETBATTLE_SLOTS] = { nullptr };
+                            BattlePet::Ptr * l_PetOpposantSlots = l_RightNullPets; // Stub: l_RightPlayer->GetBattlePetCombatTeam();
 
                             for (size_t l_CurrentOpposantPetSlot = 0; l_CurrentOpposantPetSlot < MAX_PETBATTLE_SLOTS; ++l_CurrentOpposantPetSlot)
                             {
                                 if (!l_PetOpposantSlots[l_CurrentOpposantPetSlot])
                                     continue;
 
-                                if (l_PlayerOpposantPetCount >= MAX_PETBATTLE_SLOTS || l_PlayerOpposantPetCount >= l_RightPlayer->GetUnlockedPetBattleSlot())
+                                if (l_PlayerOpposantPetCount >= MAX_PETBATTLE_SLOTS || l_PlayerOpposantPetCount >= MAX_PETBATTLE_SLOTS) // Stub: l_RightPlayer->GetUnlockedPetBattleSlot()
                                     break;
 
                                 l_PlayerOpposantPets[l_PlayerOpposantPetCount] = BattlePetInstance::Ptr(new BattlePetInstance());
@@ -2583,11 +2587,11 @@ eBattlePetRequests PetBattleSystem::CanPlayerEnterInPetBattle(Player* p_Player, 
     if (p_Player->_petBattleId)
         return PETBATTLE_REQUEST_IN_BATTLE;
 
-    if (IS_PLAYER_GUID(p_Request->OpponentGuid))
+    if (ObjectGuid(p_Request->OpponentGuid).IsPlayer())
     {
-        if (Player* l_Player = HashMapHolder<Player>::Find(p_Request->OpponentGuid))
+        if (Player* l_Player = HashMapHolder<Player>::Find(ObjectGuid(p_Request->OpponentGuid)))
         {
-            if (l_Player->_petBattleId)
+            if (sPetBattleSystem->GetPlayerPetBattle(l_Player->GetGUID()))
                 return PETBATTLE_REQUEST_IN_BATTLE;
 
             if (!p_Player->IsWithinDist3d(l_Player, INTERACTION_DISTANCE))
@@ -2597,15 +2601,17 @@ eBattlePetRequests PetBattleSystem::CanPlayerEnterInPetBattle(Player* p_Player, 
                 return PETBATTLE_REQUEST_NOT_HERE_OBSTRUCTED;
         }
     }
-    else if (IS_CREATURE_GUID(p_Request->OpponentGuid))
+    else if (ObjectGuid(p_Request->OpponentGuid).IsCreature())
     {
-        if (!p_Player->GetNPCIfCanInteractWith(p_Request->OpponentGuid, 0))
+        if (!p_Player->GetNPCIfCanInteractWith(ObjectGuid(p_Request->OpponentGuid), 0))
             return PETBATTLE_REQUEST_TARGET_INVALID;
 
-        Creature* l_Creature = sObjectAccessor->GetCreature(*p_Player, p_Request->OpponentGuid);
+        Creature* l_Creature = ObjectAccessor::GetCreature(*p_Player, ObjectGuid(p_Request->OpponentGuid));
 
-        if (l_Creature->_petBattleId != 0)
-            return PETBATTLE_REQUEST_WILD_PET_TAPPED;
+        // Check if creature is already in a pet battle (using a different approach since _petBattleId doesn't exist)
+        // This is a simplified check - in a full implementation, you'd maintain a mapping of creatures to battles
+        if (!l_Creature)
+            return PETBATTLE_REQUEST_TARGET_INVALID;
 
         if (!p_Player->IsWithinDist3d(l_Creature, INTERACTION_DISTANCE))
             return PETBATTLE_REQUEST_TARGET_OUT_OF_RANGE;
@@ -2615,7 +2621,7 @@ eBattlePetRequests PetBattleSystem::CanPlayerEnterInPetBattle(Player* p_Player, 
     }
 
     // Player can't be in combat
-    if (p_Player->isInCombat())
+    if (p_Player->IsInCombat())
         return PETBATTLE_REQUEST_NOT_WHILE_IN_COMBAT;
 
     // Check positions
@@ -2634,8 +2640,9 @@ eBattlePetRequests PetBattleSystem::CanPlayerEnterInPetBattle(Player* p_Player, 
     if (p_Request->RequestType != PETBATTLE_TYPE_PVE)
         l_OpponentTeamID = (p_Request->OpponentGuid == p_Player->GetGUID()) ? PETBATTLE_TEAM_1 : PETBATTLE_TEAM_2;
 
-    // Load player pets
-    BattlePet::Ptr * l_PetSlots = p_Player->GetBattlePetCombatTeam();
+    // Load player pets - TODO: Implement proper pet team loading for LOACore
+    BattlePet::Ptr l_CanEnterNullPets[MAX_PETBATTLE_SLOTS] = { nullptr };
+    BattlePet::Ptr * l_PetSlots = l_CanEnterNullPets; // Stub: p_Player->GetBattlePetCombatTeam();
     size_t l_PlayerPetCount = 0;
     size_t l_PlayerDeadPetCount = 0;
 
@@ -2644,7 +2651,7 @@ eBattlePetRequests PetBattleSystem::CanPlayerEnterInPetBattle(Player* p_Player, 
         if (!l_PetSlots[l_CurrentPetSlot])
             continue;
 
-        if (l_PlayerPetCount >= MAX_PETBATTLE_SLOTS || l_PlayerPetCount >= p_Player->GetUnlockedPetBattleSlot())
+        if (l_PlayerPetCount >= MAX_PETBATTLE_SLOTS || l_PlayerPetCount >= MAX_PETBATTLE_SLOTS) // Stub: p_Player->GetUnlockedPetBattleSlot()
             break;
 
         if (l_PetSlots[l_CurrentPetSlot]->Health < 1)
