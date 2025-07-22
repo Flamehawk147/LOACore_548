@@ -3675,10 +3675,10 @@ bool AchievementMgr::AdditionalRequirementsSatisfied(ModifierTreeNode const* tre
                 PetBattleTeam* team = battle->GetTeam(referencePlayer->GetGUID());
                 if (!team)
                     return false;
-                if (team->BattlePets.size() != PET_BATTLE_MAX_TEAM_PETS)
+                if (team->TeamPetCount != MAX_PETBATTLE_SLOTS)
                     return false;
-                for (auto&& pet : team->BattlePets)
-                    if (pet->GetLevel() < reqValue)
+                for (uint32 i = 0; i < MAX_PETBATTLE_SLOTS; ++i)
+                    if (team->TeamPets[i] && team->TeamPets[i]->Level < reqValue)
                         return false;
                 break;
             }
@@ -3779,7 +3779,7 @@ bool AchievementMgr::AdditionalRequirementsSatisfied(ModifierTreeNode const* tre
                 PetBattle* battle = sPetBattleSystem->GetPlayerPetBattle(referencePlayer->GetGUID());
                 if (!battle)
                     return false;
-                BattlePet* cagedPet = battle->GetCagedPet();
+                BattlePetInstance* cagedPet = battle->GetCagedPet();
                 if (!cagedPet)
                     return false;
                 return cagedPet->GetCurrentHealth() * 100.0f / cagedPet->GetMaxHealth() < float(reqValue);
@@ -3809,7 +3809,7 @@ bool AchievementMgr::AdditionalRequirementsSatisfied(ModifierTreeNode const* tre
                 PetBattle* battle = sPetBattleSystem->GetPlayerPetBattle(referencePlayer->GetGUID());
                 if (!battle)
                     return false;
-                BattlePet* cagedPet = battle->GetCagedPet();
+                BattlePetInstance* cagedPet = battle->GetCagedPet();
                 if (!cagedPet)
                     return false;
                 auto qualityEntry = sBattlePetBreedQualityStore.LookupEntry(reqValue);
