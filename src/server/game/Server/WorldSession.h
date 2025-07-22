@@ -1136,6 +1136,16 @@ class TC_GAME_API WorldSession
         void HandlePetBattleSetFrontPet(WorldPacket& recvData);
 
         void SendPetBattleRequestFailed(uint8 reason);
+        
+        // Pet Battle additional methods
+        void SendPetBattleInitialUpdate(PetBattle* battle);
+        void SendPetBattleFirstRound(PetBattle* battle);
+        void SendPetBattleRoundResult(PetBattle* battle);
+        void SendPetBattleFinalRound(PetBattle* battle);
+        void SendPetBattleQueueStatus(uint32 joinTime, uint32 ticketID, uint32 status, uint32 avgWaitTime);
+        void SendBattlePetJournalLockAcquired();
+        void SendBattlePetJournalLockDenied();
+        void SendPetBattleQueueProposeMatch();
 
         // Titles
         void HandleSetTitleOpcode(WorldPacket& recvData);

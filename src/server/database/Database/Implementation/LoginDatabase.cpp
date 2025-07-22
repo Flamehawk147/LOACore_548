@@ -143,6 +143,10 @@ void LoginDatabaseConnection::DoPrepareStatements()
 
     PrepareStatement(LOGIN_INS_ARENA_GAMES, "INSERT INTO arena_games (`gameid`, `teamid`, `guid`, `changeType`, `ratingChange`, `teamRating`, `damageDone`, `deaths`, `healingDone`, `damageTaken`, `healingTaken`, `killingBlows`, `damageAbsorbed`, `timeControlled`, `aurasDispelled`, `aurasStolen`, `highLatencyTimes`, `spellsPrecast`, `mapId`, `start`, `end`, `class`, `season`, `type`, `realmid`, `matchMakerRating`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
 
+    // Pet Battle statements
+    PrepareStatement(LOGIN_INS_PETBATTLE, "INSERT INTO pet_battles (id, challenges, slots, lfb_current_state) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_REP_PETBATTLE, "REPLACE INTO pet_battles (id, challenges, slots, lfb_current_state) VALUES (?, ?, ?, ?)", CONNECTION_ASYNC);
+
 }
 
 LoginDatabaseConnection::LoginDatabaseConnection(MySQLConnectionInfo& connInfo, ConnectionFlags connectionFlags) : MySQLConnection(connInfo, connectionFlags)

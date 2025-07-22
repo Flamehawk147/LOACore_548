@@ -266,9 +266,9 @@ uint32 PetBattleAbilityEffect::GetActiveOpponent()
 
 uint32 PetBattleAbilityEffect::GetPetType()
 {
-    if (BattlePetAbilityTurnEntry const* abilityTurn = sBattlePetAbilityTurnStore.LookupEntry(EffectInfo->abilityTurnId))
-        if (BattlePetAbilityEntry const* ability = sBattlePetAbilityStore.LookupEntry(abilityTurn->abilityId))
-            return ability->petType;
+    if (BattlePetAbilityTurnEntry const* abilityTurn = sBattlePetAbilityTurnStore.LookupEntry(EffectInfo->AbilityTurnId))
+        if (BattlePetAbilityEntry const* ability = sBattlePetAbilityStore.LookupEntry(abilityTurn->AbilityId))
+            return ability->FamilyId;
 
     return BATTLEPET_PETTYPE_HUMANOID;
 }
@@ -338,10 +338,10 @@ bool PetBattleAbilityEffect::Damage(uint32 l_Target, int32 l_Damage, bool p_Cant
 
     if (l_Damage > 0)
     {
-        PetBattleInstance->SetPetState(Caster, Caster, EffectInfo->id, BATTLEPET_STATE_Condition_DidDamageThisRound, 1);
-        PetBattleInstance->SetPetState(Caster, l_Target, EffectInfo->id, BATTLEPET_STATE_Condition_WasDamagedThisTurn, 1);
-        PetBattleInstance->SetPetState(Caster, l_Target, EffectInfo->id, BATTLEPET_STATE_Last_HitTaken, l_Damage);
-        PetBattleInstance->SetPetState(Caster, Caster, EffectInfo->id, BATTLEPET_STATE_Last_HitDealt, l_Damage);
+        PetBattleInstance->SetPetState(Caster, Caster, EffectInfo->Id, BATTLEPET_STATE_Condition_DidDamageThisRound, 1);
+        PetBattleInstance->SetPetState(Caster, l_Target, EffectInfo->Id, BATTLEPET_STATE_Condition_WasDamagedThisTurn, 1);
+        PetBattleInstance->SetPetState(Caster, l_Target, EffectInfo->Id, BATTLEPET_STATE_Last_HitTaken, l_Damage);
+        PetBattleInstance->SetPetState(Caster, Caster, EffectInfo->Id, BATTLEPET_STATE_Last_HitDealt, l_Damage);
     }
 
     if (!IsTriggered)
@@ -532,7 +532,7 @@ bool PetBattleAbilityEffect::SetState(uint32 p_Target, uint32 p_State, int32 p_V
 
     if (l_StateInfo && l_StateInfo->flags)
     {
-        PetBattleEvent l_Event(PETBATTLE_EVENT_SET_STATE, Caster, Flags, EffectInfo->id, PetBattleInstance->RoundTurn++, 0, 1);
+        PetBattleEvent l_Event(PETBATTLE_EVENT_SET_STATE, Caster, Flags, EffectInfo->Id, PetBattleInstance->RoundTurn++, 0, 1);
 
         l_Event.UpdateState(p_Target, p_State, PetBattleInstance->Pets[p_Target]->States[p_State]);
 
@@ -579,7 +579,7 @@ bool PetBattleAbilityEffect::SetHealth(uint32 p_Target, int32 p_Value)
             Flags |= PETBATTLE_EVENT_FLAG_UNK_KILL;
 
             if (!GetState(p_Target, BATTLEPET_STATE_Is_Dead))
-                PetBattleInstance->SetPetState(Caster, p_Target, EffectInfo->id, BATTLEPET_STATE_Internal_HealthBeforeInstakill, PetBattleInstance->Pets[p_Target]->Health);
+                PetBattleInstance->SetPetState(Caster, p_Target, EffectInfo->Id, BATTLEPET_STATE_Internal_HealthBeforeInstakill, PetBattleInstance->Pets[p_Target]->Health);
         }
         else if (p_Value <= 0 && GetAura(p_Target, 284))    ///< Buff : Suvival http://www.wowhead.com/petability=283/survival
             p_Value = 1;
@@ -587,7 +587,7 @@ bool PetBattleAbilityEffect::SetHealth(uint32 p_Target, int32 p_Value)
         PetBattleInstance->Pets[p_Target]->Health = p_Value;
     }
 
-    PetBattleEvent l_Event(PETBATTLE_EVENT_SET_HEALTH, Caster, Flags, EffectInfo->id, PetBattleInstance->RoundTurn++, 0, 1);
+    PetBattleEvent l_Event(PETBATTLE_EVENT_SET_HEALTH, Caster, Flags, EffectInfo->Id, PetBattleInstance->RoundTurn++, 0, 1);
     l_Event.UpdateHealth(p_Target, PetBattleInstance->Pets[p_Target]->Health);
 
     PetBattleInstance->RoundEvents.push_back(l_Event);
@@ -600,7 +600,7 @@ bool PetBattleAbilityEffect::SetHealth(uint32 p_Target, int32 p_Value)
 
 void PetBattleAbilityEffect::Trigger(uint32 p_Target, uint32 p_Ability)
 {
-    PetBattleEvent l_Event(PETBATTLE_EVENT_SET_HEALTH, Caster, Flags, EffectInfo->id, PetBattleInstance->RoundTurn++, 0, 1);
+    PetBattleEvent l_Event(PETBATTLE_EVENT_SET_HEALTH, Caster, Flags, EffectInfo->Id, PetBattleInstance->RoundTurn++, 0, 1);
 
     l_Event.Trigger(p_Target, p_Ability);
 
@@ -630,7 +630,7 @@ void PetBattleAbilityEffect::Kill(uint32 p_Target)
         return;
     }
 
-    PetBattleInstance->Kill(Caster, p_Target, EffectInfo->id, false, Flags);
+    PetBattleInstance->Kill(Caster, p_Target, EffectInfo->Id, false, Flags);
 
     /// Passive: mechanical
     if (GetState(p_Target, BATTLEPET_STATE_Passive_Mechanical))
@@ -651,7 +651,7 @@ void PetBattleAbilityEffect::Kill(uint32 p_Target)
     SetState(p_Target, BATTLEPET_STATE_Special_ConsumedCorpse, 1);
 
     PetBattleInstance->RoundDeadPets.push_back(p_Target);
-    PetBattleInstance->Kill(Caster, p_Target, EffectInfo->id);
+    PetBattleInstance->Kill(Caster, p_Target, EffectInfo->Id);
 
     StopChain = true;
 }
@@ -736,7 +736,7 @@ bool PetBattleAbilityEffect::AddTarget(PetBattleAbilityImplicitTarget /*target*/
 
 bool PetBattleAbilityEffect::AddAura(uint32 target, int32 duration, int32 maxAllowed)
 {
-    return PetBattleInstance->AddAura(Caster, target, EffectInfo->triggerAbility, duration, maxAllowed, EffectInfo->id, Flags);
+    return PetBattleInstance->AddAura(Caster, target, EffectInfo->triggerAbility, duration, maxAllowed, EffectInfo->Id, Flags);
 }
 
 void PetBattleAbilityEffect::SelectTargets()
@@ -883,13 +883,13 @@ bool PetBattleAbilityEffect::HandleCatch()
 
     bool success = roll_chance_i(chance);
 
-    PetBattleEvent event(PETBATTLE_EVENT_CATCH, Caster, success ? 0 : PETBATTLE_EVENT_FLAG_MISS, EffectInfo->id, PetBattleInstance->RoundTurn++, 0, 1);
+    PetBattleEvent event(PETBATTLE_EVENT_CATCH, Caster, success ? 0 : PETBATTLE_EVENT_FLAG_MISS, EffectInfo->Id, PetBattleInstance->RoundTurn++, 0, 1);
     event.UpdateSpeed(Target, success ? 1 : 0);
     PetBattleInstance->RoundEvents.push_back(event);
     PetBattleInstance->RoundPetSpeedUpdate.push_back(std::pair<uint32, uint32>(Target, 0));
 
     if (success)
-        PetBattleInstance->Catch(Caster, Target, EffectInfo->id);
+        PetBattleInstance->Catch(Caster, Target, EffectInfo->Id);
     else
         ModState(Target, BATTLEPET_STATE_Internal_CaptureBoost, 1);
 
@@ -1487,7 +1487,7 @@ bool PetBattleAbilityEffect::HandleDamageAuraToggleAura()
         AddAura(Target, EffectInfo->prop[4], 0);
     }
     else
-        PetBattleInstance->AddAura(Caster, Target, EffectInfo->prop[3], EffectInfo->prop[2], 0, EffectInfo->id, Flags);
+        PetBattleInstance->AddAura(Caster, Target, EffectInfo->prop[3], EffectInfo->prop[2], 0, EffectInfo->Id, Flags);
 
     CalculateHit(EffectInfo->prop[1]);
 

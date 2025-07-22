@@ -893,3 +893,52 @@ void WorldSession::SendPetBattleRequestFailed(uint8 reason)
     data << uint8(reason);
     SendPacket(&data);
 }
+
+// Pet Battle additional methods implementation
+void WorldSession::SendPetBattleInitialUpdate(PetBattle* battle)
+{
+    // TODO: Implement proper initial battle update packet
+    TC_LOG_DEBUG("network", "SendPetBattleInitialUpdate stub called");
+}
+
+void WorldSession::SendPetBattleFirstRound(PetBattle* battle)
+{
+    // TODO: Implement proper first round packet  
+    TC_LOG_DEBUG("network", "SendPetBattleFirstRound stub called");
+}
+
+void WorldSession::SendPetBattleRoundResult(PetBattle* battle)
+{
+    // TODO: Implement proper round result packet
+    TC_LOG_DEBUG("network", "SendPetBattleRoundResult stub called");
+}
+
+void WorldSession::SendPetBattleFinalRound(PetBattle* battle)
+{
+    // TODO: Implement proper final round packet
+    TC_LOG_DEBUG("network", "SendPetBattleFinalRound stub called");
+}
+
+void WorldSession::SendPetBattleQueueStatus(uint32 joinTime, uint32 ticketID, uint32 status, uint32 avgWaitTime)
+{
+    // TODO: Implement proper queue status packet
+    TC_LOG_DEBUG("network", "SendPetBattleQueueStatus stub called - Status: %u", status);
+}
+
+void WorldSession::SendBattlePetJournalLockAcquired()
+{
+    // TODO: Implement proper journal lock acquired packet
+    TC_LOG_DEBUG("network", "SendBattlePetJournalLockAcquired stub called");
+}
+
+void WorldSession::SendBattlePetJournalLockDenied()
+{
+    // TODO: Implement proper journal lock denied packet
+    TC_LOG_DEBUG("network", "SendBattlePetJournalLockDenied stub called");
+}
+
+void WorldSession::SendPetBattleQueueProposeMatch()
+{
+    // TODO: Implement proper queue propose match packet
+    TC_LOG_DEBUG("network", "SendPetBattleQueueProposeMatch stub called");
+}
