@@ -432,7 +432,7 @@ uint32 BattlePetAbilityEffect::CalculateDamage(uint32 damage)
 
 // -------------------------------------------------------------------------------
 
-void BattlePetAbilityEffect::Damage(BattlePet* target, uint32 damage)
+void BattlePetAbilityEffect::Damage(BattlePet* target, uint32 damage, bool cantBeAvoidBlockedDodged)
 {
     if (m_flags & PET_BATTLE_EFFECT_FAIL_MAKS)
         damage = 0;
@@ -1293,4 +1293,32 @@ void BattlePetAbilityEffect::HandlePowerlessAura()
 
     CalculateHit(m_effectEntry->Properties[1]);
     m_petBattle->AddAura(m_caster, m_target, m_effectEntry->TriggerAbility, m_effectEntry->Id, m_effectEntry->Properties[2], m_flags);
+}
+
+void BattlePetAbilityEffect::HandleTryRevive()
+{
+    // NYI - Not implemented
+}
+
+void BattlePetAbilityEffect::HandleCheckState()
+{
+    // NYI - Not implemented  
+}
+
+void BattlePetAbilityEffect::HandleDamageRange()
+{
+    CalculateHit(m_effectEntry->Properties[1]);
+    uint32 damage = urand(m_effectEntry->Properties[0], m_effectEntry->Properties[2]);
+    Damage(m_target, CalculateDamage(damage));
+}
+
+void BattlePetAbilityEffect::HandleDamageWithBonus()
+{
+    CalculateHit(m_effectEntry->Properties[1]);
+    uint32 damage = CalculateDamage(m_effectEntry->Properties[0]);
+    
+    if (m_effectEntry->Properties[3] && m_caster->States[m_effectEntry->Properties[3]])
+        damage += CalculateDamage(m_effectEntry->Properties[2]);
+        
+    Damage(m_target, damage);
 }
