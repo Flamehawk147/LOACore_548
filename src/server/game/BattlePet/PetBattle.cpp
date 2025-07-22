@@ -526,30 +526,30 @@ void PetBattleAura::Process(PetBattle* p_Battle)
         for (uint32 l_AbilityTurnId = 0; l_AbilityTurnId < sBattlePetAbilityTurnStore.GetNumRows(); ++l_AbilityTurnId)
         {
             BattlePetAbilityTurnEntry const* abilityTurnInfo = sBattlePetAbilityTurnStore.LookupEntry(l_AbilityTurnId);
-            if (!abilityTurnInfo || abilityTurnInfo->abilityId != AbilityID)
+            if (!abilityTurnInfo || abilityTurnInfo->AbilityId != AbilityID)
                 continue;
 
             l_TurnCount++;
-            l_MaxTurnID = std::max(l_MaxTurnID, abilityTurnInfo->turn);
+            l_MaxTurnID = std::max(l_MaxTurnID, abilityTurnInfo->Duration);
         }
 
         for (uint32 l_AbilityTurnId = 0; l_AbilityTurnId < sBattlePetAbilityTurnStore.GetNumRows(); ++l_AbilityTurnId)
         {
             BattlePetAbilityTurnEntry const* l_AbilityTurnInfo = sBattlePetAbilityTurnStore.LookupEntry(l_AbilityTurnId);
-            if (!l_AbilityTurnInfo || l_AbilityTurnInfo->abilityId != AbilityID)
+            if (!l_AbilityTurnInfo || l_AbilityTurnInfo->AbilityId != AbilityID)
                 continue;
 
-            if (l_AbilityTurnInfo->turn != Turn && l_TurnCount != 1 && l_MaxTurnID != 1)
+            if (l_AbilityTurnInfo->Duration != Turn && l_TurnCount != 1 && l_MaxTurnID != 1)
                 continue;
 
-            if (l_AbilityTurnInfo->hasProcType && l_AbilityTurnInfo->procType != PETBATTLE_ABILITY_TURN0_PROC_ON_TURN)
+            if (l_AbilityTurnInfo->hasProcType && l_AbilityTurnInfo->ProcType != PETBATTLE_ABILITY_TURN0_PROC_ON_TURN)
                 continue;
 
             for (uint32 l_AbilityEffectId = 0; l_AbilityEffectId < sBattlePetAbilityEffectStore.GetNumRows(); ++l_AbilityEffectId)
             {
                 BattlePetAbilityEffectEntry const* l_AbilityEffectInfo = sBattlePetAbilityEffectStore.LookupEntry(l_AbilityEffectId);
 
-                if (!l_AbilityEffectInfo || l_AbilityEffectInfo->abilityTurnId != l_AbilityTurnInfo->id)
+                if (!l_AbilityEffectInfo || l_AbilityEffectInfo->AbilityTurnId != l_AbilityTurnInfo->Id)
                     continue;
 
                 PetBattleAbilityEffect l_Effect;
@@ -559,7 +559,7 @@ void PetBattleAura::Process(PetBattle* p_Battle)
                 l_Effect.Caster             = CasterPetID;
                 l_Effect.StopChain          = false;
                 l_Effect.AbilityID          = AbilityID;
-                l_Effect.IsTriggered        = l_AbilityInfo->flags & BATTLEPET_ABILITY_FLAG_TRIGGER;
+                l_Effect.IsTriggered        = l_AbilityInfo->Flags & BATTLEPET_ABILITY_FLAG_TRIGGER;
                 l_Effect.ReportFailAsImmune = false;
                 l_Effect.Targets.push_back(TargetPetID);
 
@@ -771,7 +771,7 @@ uint8 PetBattleTeam::CanCatchOpponentTeamFrontPet()
 
     if (BattlePetSpeciesEntry const* l_Entry = sBattlePetSpeciesStore.LookupEntry(l_TargetPet->Species))
     {
-        if ((l_Entry->flags & BATTLEPET_SPECIES_FLAG_UNTAMEABLE) != 0)
+        if ((l_Entry->Flags & BATTLEPET_SPECIES_FLAG_UNTAMEABLE) != 0)
             return 0;
     }
 
@@ -1365,7 +1365,7 @@ void PetBattle::Finish(uint32 p_WinnerTeamID, bool p_Aborted)
                 if (l_SpeciesInfo)
                 {
                     l_Player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLEPET, l_SpeciesInfo->entry);
-                    l_Player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_SPECIFIC_BATTLEPET, l_SpeciesInfo->id);
+                    l_Player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_SPECIFIC_BATTLEPET, l_SpeciesInfo->Id);
                     l_Player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAPTURE_BATTLEPET_IN_COMBAT, 1, Pets[Teams[l_CurrentTeamID]->CapturedPet]->Quality);
                 }
 
@@ -1419,7 +1419,9 @@ void PetBattle::Finish(uint32 p_WinnerTeamID, bool p_Aborted)
                     if (!l_CurrentPet || l_CurrentPet->OriginalCreature)
                         continue;
 
-                    Creature* l_WildPet = ObjectAccessor::GetObjectInOrOutOfWorld(l_CurrentPet->OriginalCreature, (Creature*)NULL);
+                    // TODO: Implement proper creature lookup when wild pet battle system is integrated
+                    // Creature* l_WildPet = ObjectAccessor::GetCreature(*this, l_CurrentPet->OriginalCreature);
+                    Creature* l_WildPet = nullptr;
 
                     if (!l_WildPet)
                         continue;
@@ -1429,7 +1431,8 @@ void PetBattle::Finish(uint32 p_WinnerTeamID, bool p_Aborted)
                     // WildPet doesn't have _petBattleId - this was likely a copy/paste error from Draenor-Core
                     // l_WildPet->_petBattleId = 0;
 
-                    sWildBattlePetMgr->LeaveBattle(l_WildPet, p_WinnerTeamID != PETBATTLE_PVE_TEAM_ID);
+                    // TODO: Fix WildBattlePetMgr singleton when implementing wild pet battles
+                    // sWildBattlePetMgr->LeaveBattle(l_WildPet, p_WinnerTeamID != PETBATTLE_PVE_TEAM_ID);
                 }
             }
         }
@@ -1583,10 +1586,10 @@ void PetBattle::PrepareCast(uint32 p_TeamID, uint32 p_AbilityID)
     for (uint32 l_AbilityTurnId = 0; l_AbilityTurnId < sBattlePetAbilityTurnStore.GetNumRows(); ++l_AbilityTurnId)
     {
         BattlePetAbilityTurnEntry const* abilityTurnInfo = sBattlePetAbilityTurnStore.LookupEntry(l_AbilityTurnId);
-        if (!abilityTurnInfo || abilityTurnInfo->abilityId != p_AbilityID)
+        if (!abilityTurnInfo || abilityTurnInfo->AbilityId != p_AbilityID)
             continue;
 
-        l_MaxTurnID = std::max(l_MaxTurnID, abilityTurnInfo->turn);
+        l_MaxTurnID = std::max(l_MaxTurnID, abilityTurnInfo->Duration);
     }
 
     Teams[p_TeamID]->ActiveAbilityId        = p_AbilityID;
@@ -1616,10 +1619,10 @@ PetBattleCastResult PetBattle::Cast(uint32 p_CasterPetID, uint32 p_AbilityID, ui
         for (uint32 l_AbilityStateId = 0; l_AbilityStateId != sBattlePetAbilityStateStore.GetNumRows(); ++l_AbilityStateId)
         {
             BattlePetAbilityStateEntry const* l_AbilityStateInfo = sBattlePetAbilityStateStore.LookupEntry(l_AbilityStateId);
-            if (!l_AbilityStateInfo || l_AbilityStateInfo->abilityId != p_AbilityID)
+            if (!l_AbilityStateInfo || l_AbilityStateInfo->AbilityId != p_AbilityID)
                 continue;
 
-            SetPetState(p_CasterPetID, p_CasterPetID, 0, l_AbilityStateInfo->StateId, Pets[p_CasterPetID]->States[l_AbilityStateInfo->StateId] + l_AbilityStateInfo->Modifier);
+            SetPetState(p_CasterPetID, p_CasterPetID, 0, l_AbilityStateInfo->StateId, Pets[p_CasterPetID]->States[l_AbilityStateInfo->StateId] + l_AbilityStateInfo->Value);
         }
     }
 
@@ -1630,17 +1633,17 @@ PetBattleCastResult PetBattle::Cast(uint32 p_CasterPetID, uint32 p_AbilityID, ui
     {
         BattlePetAbilityTurnEntry const* l_AbilityTurnInfo = sBattlePetAbilityTurnStore.LookupEntry(l_AbilityTurnId);
 
-        if (!l_AbilityTurnInfo || l_AbilityTurnInfo->abilityId != p_AbilityID || l_AbilityTurnInfo->turn != p_Turn)
+        if (!l_AbilityTurnInfo || l_AbilityTurnInfo->AbilityId != p_AbilityID || l_AbilityTurnInfo->Duration != p_Turn)
             continue;
 
-        if (l_AbilityTurnInfo->turn == 0 && l_AbilityTurnInfo->procType != p_Turn0ProcCondition)
+        if (l_AbilityTurnInfo->Duration == 0 && l_AbilityTurnInfo->ProcType != p_Turn0ProcCondition)
             continue;
 
         for (uint32 l_AbilityEffectId = 0; l_AbilityEffectId < sBattlePetAbilityEffectStore.GetNumRows(); ++l_AbilityEffectId)
         {
             BattlePetAbilityEffectEntry const* l_AbilityEffectInfo = sBattlePetAbilityEffectStore.LookupEntry(l_AbilityEffectId);
 
-            if (!l_AbilityEffectInfo || l_AbilityEffectInfo->abilityTurnId != l_AbilityTurnInfo->id)
+            if (!l_AbilityEffectInfo || l_AbilityEffectInfo->AbilityTurnId != l_AbilityTurnInfo->Id)
                 continue;
 
             PetBattleAbilityEffect l_AbilityEffect;
@@ -1650,12 +1653,13 @@ PetBattleCastResult PetBattle::Cast(uint32 p_CasterPetID, uint32 p_AbilityID, ui
             l_AbilityEffect.Caster              = p_CasterPetID;
             l_AbilityEffect.StopChain           = false;
             l_AbilityEffect.AbilityID           = p_AbilityID;
-            l_AbilityEffect.IsTriggered         = l_AbilityInfo->flags & BATTLEPET_ABILITY_FLAG_TRIGGER;
+            l_AbilityEffect.IsTriggered         = l_AbilityInfo->Flags & BATTLEPET_ABILITY_FLAG_TRIGGER;
             l_AbilityEffect.ReportFailAsImmune  = false;
             l_AbilityEffect.SelectTargets();
 
             if (!l_AbilityEffect.Execute())
-                l_AbilityTurn.ChainFailure |= 1 << (l_AbilityEffectInfo->effectIndex - 1);
+                // TODO: Fix effectIndex field - not available in LOACore DB2 structure  
+                // l_AbilityTurn.ChainFailure |= 1 << (l_AbilityEffectInfo->effectIndex - 1);
 
             if (l_AbilityEffect.StopChain)
                 break;
@@ -1679,7 +1683,7 @@ PetBattleCastResult PetBattle::Cast(uint32 p_CasterPetID, uint32 p_AbilityID, ui
         }
 
         if (l_AbilitySlot != -1)
-            Pets[p_CasterPetID]->Cooldowns[l_AbilitySlot] = l_AbilityInfo->cooldown;
+            Pets[p_CasterPetID]->Cooldowns[l_AbilitySlot] = l_AbilityInfo->Cooldown;
     }
 
     return PETBATTLE_CAST_OK;
@@ -1771,7 +1775,7 @@ void PetBattle::SetPetState(uint32 p_SourcePetID, uint32 p_TargetPetID, uint32 p
     Pets[p_TargetPetID]->States[p_State] = p_Value;
 
     BattlePetStateEntry const* l_StateInfo = sBattlePetStateStore.LookupEntry(p_State);
-    if (l_StateInfo && l_StateInfo->flags && !p_FromCapture)
+    if (l_StateInfo && l_StateInfo->Flags && !p_FromCapture)
     {
         PetBattleEvent l_Event(PETBATTLE_EVENT_SET_STATE, p_SourcePetID, p_Flags, p_FromAbilityEffectID, RoundTurn++, 0, 1);
         l_Event.UpdateState(p_TargetPetID, p_State, p_Value);
@@ -2361,7 +2365,8 @@ void PetBattleSystem::Update(uint32 p_TimeDiff)
                             l_LeftPlayer->TeleportTo(l_Location.MapID, l_Location.Positions[PETBATTLE_TEAM_1].x + 0.01f, l_Location.Positions[PETBATTLE_TEAM_1].y + 0.01f, l_Location.Positions[PETBATTLE_TEAM_1].z + 0.01f, l_RightPlayer->GetOrientation() - M_PI);
 
                             l_RightPlayer->SetBattlegroundEntryPoint();
-                            l_RightPlayer->ScheduleDelayedOperation(DELAYED_PET_BATTLE_INITIAL);
+                            // TODO: Implement DELAYED_PET_BATTLE_INITIAL or equivalent
+                            // l_RightPlayer->ScheduleDelayedOperation(DELAYED_PET_BATTLE_INITIAL);
                             l_RightPlayer->SaveRecallPosition();
                             l_RightPlayer->TeleportTo(l_Location.MapID, l_Location.Positions[PETBATTLE_TEAM_2].x + 0.01f, l_Location.Positions[PETBATTLE_TEAM_2].y + 0.01f, l_Location.Positions[PETBATTLE_TEAM_2].z + 0.01f, l_LeftPlayer->GetOrientation() - M_PI);
 
