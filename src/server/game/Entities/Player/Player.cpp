@@ -24,6 +24,7 @@
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
 #include "BattlePetMgr.h"
+#include "PetBattle.h"
 #include "CellImpl.h"
 #include "Channel.h"
 #include "ChannelMgr.h"
@@ -409,6 +410,7 @@ Player::Player(WorldSession* session) : Unit(true), phaseMgr(this), hasForcedMov
     m_achievementMgr.reset(new PlayerAchievementMgr(this));
     m_reputationMgr = new ReputationMgr(this);
     m_battlePetMgr = new BattlePetMgr(this);
+    _petBattleId = 0;
 
     _cinematicMgr = std::make_unique<CinematicMgr>(this);
 
@@ -32371,4 +32373,29 @@ void Player::PlayerSendSetPhaseShift(std::set<uint32> const& phaseIds)
     RebuildTerrainSwaps(); // to set default map swaps
 
     GetSession()->SendSetPhaseShift(phaseIds, GetTerrainSwaps(), GetWorldMapSwaps());
+}
+
+// Pet Battle integration methods
+void* Player::GetBattlePetCombatTeam()
+{
+    // TODO: Implement proper pet combat team retrieval from BattlePetMgr
+    static BattlePet::Ptr s_NullPets[3] = { nullptr, nullptr, nullptr };
+    return static_cast<void*>(s_NullPets);
+}
+
+uint32 Player::GetUnlockedPetBattleSlot() const
+{
+    // TODO: Implement proper slot unlock check based on player level/achievements
+    // For now, return maximum slots for testing
+    return 3; // MAX_PETBATTLE_SLOTS
+}
+
+void Player::SummonLastSummonedBattlePet()
+{
+    // TODO: Implement battle pet re-summoning after pet battle
+}
+
+void Player::ReloadPetBattles()
+{
+    // TODO: Implement pet battle data reload
 }

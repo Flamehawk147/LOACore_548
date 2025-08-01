@@ -4,4 +4,4 @@
 /.vs
 build/
 .DS_Store
-.idea/
+.idea/*.backup

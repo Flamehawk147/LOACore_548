@@ -133,6 +133,9 @@ enum LoginDatabaseStatements : uint32
 
     LOGIN_INS_ARENA_GAMES,
 
+    LOGIN_INS_PETBATTLE,
+    LOGIN_REP_PETBATTLE,
+
     MAX_LOGINDATABASE_STATEMENTS
 };
 

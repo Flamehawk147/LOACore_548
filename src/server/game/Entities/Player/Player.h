@@ -47,6 +47,7 @@ struct TrainerSpell;
 struct VendorItem;
 
 class BattlePetMgr;
+class BattlePet;
 class CinematicMgr;
 class Channel;
 class CharacterCreateInfo;
@@ -2544,6 +2545,16 @@ public:
     {
         return *m_battlePetMgr;
     }
+    
+    // Pet Battle integration methods
+    void* GetBattlePetCombatTeam(); // Returns BattlePet::Ptr* - using void* to avoid circular dependency
+    uint32 GetUnlockedPetBattleSlot() const;
+    void SummonLastSummonedBattlePet();
+    void ReloadPetBattles();
+    
+    // Pet Battle ID accessors
+    uint32 GetPetBattleId() const { return _petBattleId; }
+    void SetPetBattleId(uint32 battleId) { _petBattleId = battleId; }
 
     // challenge mode
     void _LoadCompletedChallenges(PreparedQueryResult result);
@@ -3674,6 +3685,7 @@ protected:
     PhaseMgr phaseMgr;
 
     BattlePetMgr* m_battlePetMgr;
+    uint32 _petBattleId;
 
     Creature* transcendence_spirit;
 
